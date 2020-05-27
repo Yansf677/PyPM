@@ -48,7 +48,7 @@ class FC_Autoencoder:
                 output_layer = Dense(self.x.shape[1], activation = 'linear')(decode_layer)
             else:
                 output_layer = Dense(self.x.shape[1], activation = decode_activation)(decode_layer)
-           
+            
         self.FC_autoencoder = Model(input=input_layer, output=output_layer)
         self.FC_encoder = Model(input=input_layer, output=latent_layer)
         
