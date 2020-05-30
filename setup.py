@@ -1,7 +1,9 @@
+from setuptools import find_packages,setup
 
-from setuptools import setup
 
-setup(name='PyPM',
-      version='1.0',
-      py_modules=['PyPM'],
-      )
+setup(
+    name = 'pypm',
+    version = '0.1',
+    packages = find_packages(),
+)
+

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 
-def statistic_mahalanobis_distance(x, X):
+def statistic_mahalanobis_distance(x, sigma_X):
     """
     function to calculate mahalanobis distance for a new sample
     
@@ -11,7 +11,7 @@ def statistic_mahalanobis_distance(x, X):
         score of a new sample
     
     X:
-        scores of offline data
+        inverse by scores of offline data
         
     return
     ------
@@ -19,9 +19,9 @@ def statistic_mahalanobis_distance(x, X):
     
     """
     
-    inverse = np.linalg.inv(np.dot(X.T, X) / X.shape[0])
+    #inverse = np.linalg.inv(np.dot(X.T, X) / X.shape[0])
     
-    return np.dot(x.reshape(1,-1), np.dot(inverse, x.reshape(-1,1)))
+    return np.dot(x.reshape(1,-1), np.dot(sigma_X, x.reshape(-1,1)))
 
 def statistic_euclid_distance(x, x_re):
     """

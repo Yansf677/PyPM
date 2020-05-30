@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 import numpy as np
@@ -93,7 +94,7 @@ if __name__ == '__main__':
     
     # Build an autoencoder
     Autoencoder = FC_Autoencoder(train_data, [33,21,10,21,33])
-    Autoencoder.construct_model(encode_activation='sigmoid', decode_activation='relu')
+    Autoencoder.construct_model(encode_activation='sigmoid', decode_activation='sigmoid')
     
     # Train model
     Autoencoder.train_model(epochs=200, batch_size=100)

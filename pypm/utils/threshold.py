@@ -37,7 +37,7 @@ def threshold_kde(x, alpha):
     
     return step[i]
 
-def threshold_T2(x, freedom, alpha):
+def threshold_F(x, freedom, alpha):
     """
     calculate thresholds for mahalanobis distance
     
@@ -65,7 +65,7 @@ def threshold_T2(x, freedom, alpha):
     
     return freedom * (n-1) * (n+1) * F / (n * (n-freedom))
     
-def threshold_SPE(x, alpha):
+def threshold_chi2(x, alpha):
     """
     calculate thresholds for mahalanobis distance
     
