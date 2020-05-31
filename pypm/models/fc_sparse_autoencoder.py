@@ -10,7 +10,7 @@ from keras.models import Model
 from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
-class FC_SparseAutoencoder:
+class FcSparseAutoencoder:
     
     def __init__(self, x, hidden_dims):
         
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     train_data = StandardScaler.transform(np.array(data))
     
     # Build a SparseAutoencoder
-    SparseAutoencoder = FC_SparseAutoencoder(train_data, [60,33,60])
+    SparseAutoencoder = FcSparseAutoencoder(train_data, [60,33,60])
     SparseAutoencoder.construct_model(p=0.01, beta=1, encode_activation='sigmoid', decode_activation='sigmoid')
     
     # Train model

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 
-from pypm.detection.Detection_by_Autoencoder import Detection_by_Autoencoder as DE
+from pypm.detection.detection_by_autoencoder import DetectionbyAutoencoder as DE
 
 if __name__ == '__main__':
     

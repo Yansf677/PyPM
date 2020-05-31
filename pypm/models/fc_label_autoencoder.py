@@ -11,7 +11,7 @@ from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
 
-class FC_LabelAutoencoder:
+class FcLabelAutoencoder:
     
     def __init__(self, x, labels, hidden_dims, use_onehot=False):
         
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     labels = np.hstack((np.zeros(959), np.ones(959))).reshape(-1, 1)
     
     # Build an labelautoencoder
-    LabelAutoencoder = FC_LabelAutoencoder(train_data, labels, [33,21,10,21,33], use_onehot=False)
+    LabelAutoencoder = FcLabelAutoencoder(train_data, labels, [33,21,10,21,33], use_onehot=False)
     LabelAutoencoder.construct_model(encode_activation='sigmoid', decode_activation='relu')
     
     # Train model

@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-import os
 
 import numpy as np
-import pandas as pd
-from sklearn import preprocessing
 import matplotlib.pyplot as plt
 
-from pypm.models.FC_Autoencoder import FC_Autoencoder as AE
+from pypm.models.fc_autoencoder import FcAutoencoder as AE
 
 from pypm.utils.threshold import threshold_kde
 from pypm.utils.threshold import threshold_F
@@ -15,7 +12,7 @@ from pypm.utils.threshold import threshold_chi2
 from pypm.utils.statistic import statistic_mahalanobis_distance as T2
 from pypm.utils.statistic import statistic_euclid_distance as SPE
 
-class Detection_by_Autoencoder:
+class DetectionbyAutoencoder:
     
     def __init__(self, x, hidden_dims):
         
@@ -97,12 +94,3 @@ class Detection_by_Autoencoder:
         plt.show()
         
         print('The detective rate is {}'.format(detective_rate))
-
-if __name__ == '__main__':
-    
-    data = pd.read_csv(os.getcwd() + r'\\pypm\\datasets\\Tennessee.csv')
-    data1 = pd.read_csv(os.getcwd() + r'\\pypm\\datasets\\d01_te.csv')
-    StandardScaler = preprocessing.StandardScaler().fit(np.array(data))
-    train_data = StandardScaler.transform(np.array(data))
-    test_data = StandardScaler.transform(np.array(data1))
-    

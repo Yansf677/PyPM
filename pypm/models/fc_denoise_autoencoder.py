@@ -9,7 +9,7 @@ from keras.models import Model
 from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
-class FC_DenoiseAutoencoder:
+class FcDenoiseAutoencoder:
     
     def __init__(self, x, hidden_dims, corrupt='Gaussian', corrupt_rate=0.5):
         
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     train_data = StandardScaler.transform(np.array(data))
     
     # Buid a DenosingAutoencoder
-    DenoiseAutoencoder = FC_DenoiseAutoencoder(train_data, [60, 30, 60], corrupt='binary')
+    DenoiseAutoencoder = FcDenoiseAutoencoder(train_data, [60, 30, 60], corrupt='binary')
     DenoiseAutoencoder.construct_model(encode_activation='sigmoid', decode_activation='relu')
     
     # Train model
