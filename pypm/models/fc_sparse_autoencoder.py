@@ -58,40 +58,48 @@ class FcSparseAutoencoder:
             else:
                 output_layer = Dense(self.x.shape[1], activation = decode_activation)(decode_layer)
            
-        self.FC_autoencoder = Model(input=input_layer, output=output_layer)
-        self.FC_encoder = Model(input=input_layer, output=latent_layer)
+        self.FcSparseAutoencoder = Model(input=input_layer, output=output_layer)
+        self.FcSparseEncoder = Model(input=input_layer, output=latent_layer)
         
     def train_model(self, epochs=1000, batch_size=100, optimizer='Adam', loss='mean_squared_error', use_Earlystopping=True):
         
-        self.FC_autoencoder.compile(optimizer=optimizer, loss=loss)
+        self.FcSparseAutoencoder.compile(optimizer=optimizer, loss=loss)
         
         if use_Earlystopping == True:
-            self.history = self.FC_autoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
+            self.history = self.FcSparseAutoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
                                     validation_split = 0.10, callbacks = [EarlyStopping(monitor='val_loss', patience = 10)])
         else:
-            self.history = self.FC_autoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
+            self.history = self.FcSparseAutoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
         
     def get_features(self, x_test):
         
-        return self.FC_encoder.predict(x_test)
+        return self.FcSparseEncoder.predict(x_test)
         
     def get_reconstructions(self, x_test):
         
-        return self.FC_autoencoder.predict(x_test)
+        return self.FcSparseAutoencoder.predict(x_test)
         
-    def save_model(self, FC_autoencoder_name=None, FC_encoder_name=None):
+    def save_model(self, FcSparseAutoencoder_name=None, FcSparseEncoder_name=None):
         
-        if FC_autoencoder_name != None:
-            self.FC_autoencoder.save(FC_autoencoder_name + '.h5')
-        if FC_encoder_name != None:
-            self.FC_encoder.save(FC_encoder_name + '.h5')
+        if FcSparseAutoencoder_name != None:
+            self.FcSparseAutoencoder.save(FcSparseAutoencoder_name + '.h5')
+        else:
+            print("FcSparseAutoencoder is not saved !")
+        if FcSparseEncoder_name != None:
+            self.FcEncoder.save(FcSparseEncoder_name + '.h5')
+        else:
+            print("FcSparseEncoder is not saved !")
         
-    def load_model(self, FC_autoencoder_path=None, FC_encoder_path=None):
+    def load_model(self, FcSparseAutoencoder_name=None, FcSparseEncoder_name=None):
         
-        if FC_autoencoder_path != None:
-            self.FC_autoencoder = load_model(FC_autoencoder_path + '.h5')
-        if FC_encoder_path != None:
-            self.FC_encoder = load_model(FC_encoder_path + '.h5')
+        if FcSparseAutoencoder_name != None:
+            self.FcSparseAutoencoder = load_model(FcSparseAutoencoder_name + '.h5')
+        else:
+            print("FcSparseAutoencoder is not load !")
+        if FcSparseEncoder_name != None:
+            self.FcSparseEncoder = load_model(FcSparseEncoder_name + '.h5')
+        else:
+            print("FcSparseEncoder is not load !")
         
 if __name__ == '__main__':
 

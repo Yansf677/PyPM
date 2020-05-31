@@ -52,40 +52,49 @@ class FcDenoiseAutoencoder:
             else:
                 output_layer = Dense(self.x.shape[1], activation = decode_activation)(decode_layer)
            
-        self.FC_autoencoder = Model(input=input_layer, output=output_layer)
-        self.FC_encoder = Model(input=input_layer, output=latent_layer)
+        self.FcDenoiseAutoencoder = Model(input=input_layer, output=output_layer)
+        self.FcDenoiseEncoder = Model(input=input_layer, output=latent_layer)
         
     def train_model(self, epochs=1000, batch_size=100, optimizer='Adam', loss='mean_squared_error', use_Earlystopping=True):
         
-        self.FC_autoencoder.compile(optimizer=optimizer, loss=loss)
+        self.FcDenoiseAutoencoder.compile(optimizer=optimizer, loss=loss)
         
         if use_Earlystopping == True:
-            self.history = self.FC_autoencoder.fit(self.x_corrupted, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
+            self.history = self.FcDenoiseAutoencoder.fit(self.x_corrupted, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
                                     validation_split = 0.10, callbacks = [EarlyStopping(monitor='val_loss', patience = 30)])
         else:
-            self.history = self.FC_autoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
+            self.history = self.FcDenoiseAutoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
         
     def get_features(self, x_test):
         
-        return self.FC_encoder.predict(x_test)
+        return self.FcDenoiseEncoder.predict(x_test)
         
     def get_reconstructions(self, x_test):
         
-        return self.FC_autoencoder.predict(x_test)
+        return self.FcDenoiseAutoencoder.predict(x_test)
         
-    def save_model(self, FC_autoencoder_name=None, FC_encoder_name=None):
+    def save_model(self, FcDenoiseAutoencoder_name=None, FcDenoiseEncoder_name=None):
         
-        if FC_autoencoder_name != None:
-            self.FC_autoencoder.save(FC_autoencoder_name + '.h5')
-        if FC_encoder_name != None:
-            self.FC_encoder.save(FC_encoder_name + '.h5')
+        if FcDenoiseAutoencoder_name != None:
+            self.FcDenoiseAutoencoder.save(FcDenoiseAutoencoder_name + '.h5')
+        else:
+            print("FcDenoiseAutoencoder is not saved !")
+        if FcDenoiseEncoder_name != None:
+            self.FcEncoder.save(FcDenoiseEncoder_name + '.h5')
+        else:
+            print("FcDenoiseEncoder is not saved !")
         
-    def load_model(self, FC_autoencoder_path=None, FC_encoder_path=None):
+    def load_model(self, FcDenoiseAutoencoder_name=None, FcDenoiseEncoder_name=None):
         
-        if FC_autoencoder_path != None:
-            self.FC_autoencoder = load_model(FC_autoencoder_path + '.h5')
-        if FC_encoder_path != None:
-            self.FC_encoder = load_model(FC_encoder_path + '.h5')
+        if FcDenoiseAutoencoder_name != None:
+            self.FcDenoiseAutoencoder = load_model(FcDenoiseAutoencoder_name + '.h5')
+        else:
+            print("FcDenoiseAutoencoder is not load !")
+        if FcDenoiseEncoder_name != None:
+            self.FcDenoiseEncoder = load_model(FcDenoiseEncoder_name + '.h5')
+        else:
+            print("FcDenoiseEncoder is not load !")
+        
         
 if __name__ == '__main__':
     
