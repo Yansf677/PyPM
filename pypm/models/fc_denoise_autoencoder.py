@@ -1,8 +1,8 @@
-import os
+# -*- coding: utf-8 -*-
 
 import numpy as np
-import pandas as pd
 from sklearn import preprocessing
+from sklearn.datasets import load_wine
 
 from keras.layers import Input, Dense
 from keras.models import Model
@@ -80,7 +80,7 @@ class FcDenoiseAutoencoder:
         else:
             print("FcDenoiseAutoencoder is not saved !")
         if FcDenoiseEncoder_name != None:
-            self.FcEncoder.save(FcDenoiseEncoder_name + '.h5')
+            self.FcDenoiseEncoder.save(FcDenoiseEncoder_name + '.h5')
         else:
             print("FcDenoiseEncoder is not saved !")
         
@@ -99,16 +99,16 @@ class FcDenoiseAutoencoder:
 if __name__ == '__main__':
     
     # load data and preprocess
-    data = pd.read_csv(os.path.dirname(os.getcwd()) + r'\\datasets\\Tennessee.csv')
-    StandardScaler = preprocessing.StandardScaler().fit(np.array(data))
-    train_data = StandardScaler.transform(np.array(data))
+    data = load_wine().data
+    StandardScaler = preprocessing.StandardScaler().fit(data)
+    train_data = StandardScaler.transform(data)
     
     # Buid a DenosingAutoencoder
-    DenoiseAutoencoder = FcDenoiseAutoencoder(train_data, [60, 30, 60], corrupt='binary')
-    DenoiseAutoencoder.construct_model(encode_activation='sigmoid', decode_activation='relu')
+    DenoiseAutoencoder = FcDenoiseAutoencoder(train_data, [10, 6, 10], corrupt='binary')
+    DenoiseAutoencoder.construct_model()
     
     # Train model
-    DenoiseAutoencoder.train_model(epochs=200, batch_size=100)
+    DenoiseAutoencoder.train_model()
     
     # Save model
     DenoiseAutoencoder.save_model('DenoiseAutoencoder', 'DenoiseEncoder')

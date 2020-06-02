@@ -1,8 +1,8 @@
-import os
+# -*- coding: utf-8 -*-
 
 import numpy as np
-import pandas as pd
 from sklearn import preprocessing
+from sklearn.datasets import load_wine
 
 from keras.utils import to_categorical
 from keras.layers import Input, Dense
@@ -19,8 +19,11 @@ class FcLabelAutoencoder:
         if use_onehot == True:
             self.labels = to_categorical(labels)
         else:    
-            self.labels = labels
-        self.x_and_label = np.hstack((x, labels))
+            if labels.ndim == 1:
+                self.labels = labels.reshape(-1,1)
+            else:
+                self.labels = labels
+        self.x_and_label = np.hstack((self.x, self.labels))
         self.hidden_dims = np.array(hidden_dims)
         
     def construct_model(self, encode_activation='sigmoid', decode_activation='sigmoid', use_linear=True):
@@ -85,18 +88,18 @@ class FcLabelAutoencoder:
         # Learn label features
         self.FcEncoder.compile(optimizer=optimizer, loss=loss)
         if use_Earlystopping == True:
-            self.history_encoder = self.FcEncoder.fit(self.x, self.FC_encoder_label.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True,
+            self.history_encoder = self.FcEncoder.fit(self.x, self.FcLabelEncoder.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True,
                                 validation_split=0.10, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
         else:
-            self.history_encoder = self.FcEncoder.fit(self.x, self.FC_encoder_label.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True)
+            self.history_encoder = self.FcEncoder.fit(self.x, self.FcLabelEncoder.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True)
         
         # reconstruct features
         self.FcDecoder.compile(optimizer=optimizer, loss=loss)
         if use_Earlystopping == True:
-            self.history_decoder = self.FcDecoder.fit(self.FC_encoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True,
+            self.history_decoder = self.FcDecoder.fit(self.FcEncoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True,
                                 validation_split=0.10, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
         else:
-            self.history_decoder = self.FcDecoder.fit(self.FC_encoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True)
+            self.history_decoder = self.FcDecoder.fit(self.FcEncoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True)
         
     def get_features(self, x_test):
         
@@ -109,7 +112,7 @@ class FcLabelAutoencoder:
     def save_model(self, FcEncoder_name=None, FcDecoder_name=None):
         
         if FcEncoder_name != None:
-            self.FC_encoder.save(FcEncoder_name + '.h5')
+            self.FcEncoder.save(FcEncoder_name + '.h5')
         else:
             print("FcEncoder is not saved !")
         if FcDecoder_name != None:
@@ -131,23 +134,18 @@ class FcLabelAutoencoder:
 if __name__ == '__main__':
     
     # load data and preprocess
-    data1 = pd.read_csv(os.path.dirname(os.getcwd()) + r'\\datasets\\d01_te.csv')
-    StandardScaler1 = preprocessing.StandardScaler().fit(np.array(data1))
-    train_data1 = StandardScaler1.transform(np.array(data1))
+    data = load_wine().data
+    labels = load_wine().target
     
-    data2 = pd.read_csv(os.path.dirname(os.getcwd()) + r'\\datasets\\d02_te.csv')
-    StandardScaler2 = preprocessing.StandardScaler().fit(np.array(data2))
-    train_data2 = StandardScaler2.transform(np.array(data2))
-    
-    train_data = np.vstack((train_data1, train_data2))
-    labels = np.hstack((np.zeros(959), np.ones(959))).reshape(-1, 1)
+    StandardScaler = preprocessing.StandardScaler().fit(data)
+    train_data = StandardScaler.transform(data)
     
     # Build an labelautoencoder
-    LabelAutoencoder = FcLabelAutoencoder(train_data, labels, [33,21,10,21,33], use_onehot=False)
-    LabelAutoencoder.construct_model(encode_activation='sigmoid', decode_activation='relu')
+    LabelAutoencoder = FcLabelAutoencoder(train_data, labels, [10, 8, 10], use_onehot=True)
+    LabelAutoencoder.construct_model()
     
     # Train model
-    LabelAutoencoder.train_model(epochs=200, batch_size=100)
+    LabelAutoencoder.train_model()
     
     # Save model
     LabelAutoencoder.save_model('LabelAutoencoder', 'LabelEncoder')

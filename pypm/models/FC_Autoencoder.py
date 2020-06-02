@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import os
 
 import numpy as np
-import pandas as pd
 from sklearn import preprocessing
+from sklearn.datasets import load_wine
 
 from keras.layers import Input, Dense
 from keras.models import Model
@@ -96,16 +95,16 @@ class FcAutoencoder:
 if __name__ == '__main__':
     
     # load data and preprocess
-    data = pd.read_csv(os.path.dirname(os.getcwd()) + r'\\datasets\\Tennessee.csv')
-    StandardScaler = preprocessing.StandardScaler().fit(np.array(data))
-    train_data = StandardScaler.transform(np.array(data))
+    data = load_wine().data
+    StandardScaler = preprocessing.StandardScaler().fit(data)
+    train_data = StandardScaler.transform(data)
     
     # Build an autoencoder
-    Autoencoder = FcAutoencoder(train_data, [33,21,10,21,33])
-    Autoencoder.construct_model(encode_activation='sigmoid', decode_activation='sigmoid')
+    Autoencoder = FcAutoencoder(train_data, [10, 6, 10])
+    Autoencoder.construct_model()
     
     # Train model
-    Autoencoder.train_model(epochs=200, batch_size=100)
+    Autoencoder.train_model()
     
     # Save model
     Autoencoder.save_model('Autoencoder', 'Encoder')

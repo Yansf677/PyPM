@@ -1,8 +1,8 @@
-import os
+# -*- coding: utf-8 -*-
 
 import numpy as np
-import pandas as pd
 from sklearn import preprocessing
+from sklearn.datasets import load_wine
 
 from keras import backend as K
 from keras.layers import Input, Dense
@@ -86,7 +86,7 @@ class FcSparseAutoencoder:
         else:
             print("FcSparseAutoencoder is not saved !")
         if FcSparseEncoder_name != None:
-            self.FcEncoder.save(FcSparseEncoder_name + '.h5')
+            self.FcSparseEncoder.save(FcSparseEncoder_name + '.h5')
         else:
             print("FcSparseEncoder is not saved !")
         
@@ -104,16 +104,16 @@ class FcSparseAutoencoder:
 if __name__ == '__main__':
 
     # load data and preprocess
-    data = pd.read_csv(os.path.dirname(os.getcwd()) + r'\\datasets\\Tennessee.csv')
-    StandardScaler = preprocessing.StandardScaler().fit(np.array(data))
-    train_data = StandardScaler.transform(np.array(data))
+    data = load_wine().data
+    StandardScaler = preprocessing.StandardScaler().fit(data)
+    train_data = StandardScaler.transform(data)
     
     # Build a SparseAutoencoder
-    SparseAutoencoder = FcSparseAutoencoder(train_data, [60,33,60])
-    SparseAutoencoder.construct_model(p=0.01, beta=1, encode_activation='sigmoid', decode_activation='sigmoid')
+    SparseAutoencoder = FcSparseAutoencoder(train_data, [20, 10, 20])
+    SparseAutoencoder.construct_model()
     
     # Train model
-    SparseAutoencoder.train_model(epochs=200, batch_size=100)
+    SparseAutoencoder.train_model()
     
     # Save model
     SparseAutoencoder.save_model('SparseAutoencoder', 'SparseEncoder')

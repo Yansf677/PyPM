@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
-import os
 
-import numpy as np
-import pandas as pd
+from sklearn.datasets import load_wine
 from sklearn import preprocessing
 
-from pypm.detection.detection_by_autoencoder import DetectionbyAutoencoder as DE
+from pypm.detection.detection_by_autoencoder import DetectionbyAutoencoder as D_AE
 
 if __name__ == '__main__':
     
-    data = pd.read_csv(os.getcwd() + r'\\pypm\\datasets\\Tennessee.csv')
-    data1 = pd.read_csv(os.getcwd() + r'\\pypm\\datasets\\d01_te.csv')
-    StandardScaler = preprocessing.StandardScaler().fit(np.array(data))
-    train_data = StandardScaler.transform(np.array(data))
-    test_data = StandardScaler.transform(np.array(data1))
+    x1 = load_wine().data[0:59, :]
+    x2 = load_wine().data[59:130, :]
+    x3 = load_wine().data[130:, :]
     
-    DE = DE(train_data, [40,33,40])
-    DE.offline_modeling()
-    DE.get_offline_statistics()
-    DE.cal_threshold(0.99, use_kde=True)
-    DE.monitor_multi_sample(test_data, print_info=False)
+    StandardScaler = preprocessing.StandardScaler().fit(x1)
+    x1 = StandardScaler.transform(x1)
+    x2 = StandardScaler.transform(x2)
+    x3 = StandardScaler.transform(x3)
     
+    D_AE = D_AE(x1, [10, 8, 10])
+    D_AE.offline_modeling()
+    D_AE.get_offline_statistics()
+    D_AE.cal_threshold(0.99, use_kde=True)
+    D_AE.monitor_multi_sample(x2, print_info=False)
+    D_AE.monitor_multi_sample(x3, print_info=False)
