@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sklearn import preprocessing
-from sklearn.datasets import load_wine
 
 from keras.layers import Input, Dense
 from keras.models import Model
@@ -10,11 +8,48 @@ from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
 class FcAutoencoder:
+    """
+    Fully connected autoencoder (AE)
+    
+    Parameters
+    ----------
+    x (n_samples, n_features) - The training input samples
+    hidden_dims (List) - The structure of autoencoder
+    
+    Attributes
+    ----------
+    FcAutoencoder (network) - The model of autoencoder
+    FcEncoder (network) - The encoder part 
+    
+    Example
+    -------
+    >>> from sklearn import preprocessing
+    >>> from sklearn.datasets import load_wine
+    >>> from pypm.models.fc_autoencoder import FcAutoencoder
+    >>> # Load data
+    >>> data = load_wine().data
+    array([[1.423e+01, 1.710e+00, 2.430e+00, ..., 1.040e+00, 3.920e+00 ...
+    >>> StandardScaler = preprocessing.StandardScaler().fit(data)
+    >>> train_data = StandardScaler.transform(data)
+    array([[ 1.51861254, -0.5622498 ,  0.23205254, ...,  0.36217728 ...
+    >>> # Build an autoencoder
+    >>> Autoencoder = FcAutoencoder(train_data, [10, 6, 10])
+    >>> Autoencoder.construct_model()
+    >>> # Train model
+    >>> Autoencoder.train_model()
+    >>> # Save model
+    >>> Autoencoder.save_model('Autoencoder', 'Encoder')
+    >>> # Get features & reconstructions
+    >>> Features = Autoencoder.get_features(train_data)
+    array([[0.7609496 , 0.37115023, 0.70390266, 0.37966228, 0.60897684 ...
+    >>> Reconstructions = Autoencoder.get_reconstructions(train_data)
+    array([[-0.05012968,  0.35567132, -0.4547131 , ...,  0.11404108 ...
+    
+    """
     
     def __init__(self, x, hidden_dims):
         
         self.x = x
-        
         self.hidden_dims = np.array(hidden_dims)
         
     def construct_model(self, encode_activation='sigmoid', decode_activation='sigmoid', use_linear=True):
@@ -92,24 +127,3 @@ class FcAutoencoder:
         else:
             print("FcEncoder is not load !")
         
-if __name__ == '__main__':
-    
-    # load data and preprocess
-    data = load_wine().data
-    StandardScaler = preprocessing.StandardScaler().fit(data)
-    train_data = StandardScaler.transform(data)
-    
-    # Build an autoencoder
-    Autoencoder = FcAutoencoder(train_data, [10, 6, 10])
-    Autoencoder.construct_model()
-    
-    # Train model
-    Autoencoder.train_model()
-    
-    # Save model
-    Autoencoder.save_model('Autoencoder', 'Encoder')
-    
-    # Get features & reconstructions
-    Features = Autoencoder.get_features(train_data)
-    Reconstructions = Autoencoder.get_reconstructions(train_data)
-    

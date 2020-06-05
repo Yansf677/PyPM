@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sklearn import preprocessing
-from sklearn.datasets import load_wine
 
 from keras.layers import Input, Dense
 from keras.models import Model
@@ -10,6 +8,46 @@ from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
 class FcDenoiseAutoencoder:
+    """
+    Fully connected denoising autoencoder (DAE)
+    
+    Parameters
+    ----------
+    x (n_samples, n_features) - The training input samples
+    hidden_dims (List) - The structure of autoencoder
+    corrupt (str, optional, default='Gaussian') - The type of corruption
+    corrupt_rate (float, default=0.5) - The rate of corruption
+    
+    Attributes
+    ----------
+    FcDenoiseAutoencoder (network) - The model of denoising autoencoder
+    FcDenoiseEncoder (network) - The encoder part  
+    
+    Example
+    -------
+    >>> from sklearn import preprocessing
+    >>> from sklearn.datasets import load_wine
+    >>> from pypm.models.fc_denoise_autoencoder import FcDenoiseAutoencoder
+    >>> # Load data
+    >>> data = load_wine().data
+    array([[1.423e+01, 1.710e+00, 2.430e+00, ..., 1.040e+00, 3.920e+00 ...
+    >>> StandardScaler = preprocessing.StandardScaler().fit(data)
+    >>> train_data = StandardScaler.transform(data)
+    array([[ 1.51861254, -0.5622498 ,  0.23205254, ...,  0.36217728 ...
+    >>> # Build a denoise autoencoder
+    >>> DenoiseAutoencoder = FcDenoiseAutoencoder(train_data, [10, 6, 10], corrupt='binary')
+    >>> DenoiseAutoencoder.construct_model()
+    >>> # Train model
+    >>> DenoiseAutoencoder.train_model() 
+    >>> # Save model
+    >>> DenoiseAutoencoder.save_model('DenoiseAutoencoder', 'DenoiseEncoder')
+    >>> # Get features & reconstructions
+    >>> Features = DenoiseAutoencoder.get_features(train_data)
+    array([[0.09853178, 0.1520491 , 0.01192483, 0.00760067, 0.0273003 ...
+    >>> Reconstructions = DenoiseAutoencoder.get_reconstructions(train_data)
+    array([[ 1.203124  , -0.39634925,  0.36789453, ...,  0.61248255 ...
+    
+    """
     
     def __init__(self, x, hidden_dims, corrupt='Gaussian', corrupt_rate=0.5):
         
@@ -95,24 +133,3 @@ class FcDenoiseAutoencoder:
         else:
             print("FcDenoiseEncoder is not load !")
         
-        
-if __name__ == '__main__':
-    
-    # load data and preprocess
-    data = load_wine().data
-    StandardScaler = preprocessing.StandardScaler().fit(data)
-    train_data = StandardScaler.transform(data)
-    
-    # Buid a DenosingAutoencoder
-    DenoiseAutoencoder = FcDenoiseAutoencoder(train_data, [10, 6, 10], corrupt='binary')
-    DenoiseAutoencoder.construct_model()
-    
-    # Train model
-    DenoiseAutoencoder.train_model()
-    
-    # Save model
-    DenoiseAutoencoder.save_model('DenoiseAutoencoder', 'DenoiseEncoder')
-    
-    # Get features & reconstructions
-    Features = DenoiseAutoencoder.get_features(train_data)
-    Reconstructions = DenoiseAutoencoder.get_reconstructions(train_data)

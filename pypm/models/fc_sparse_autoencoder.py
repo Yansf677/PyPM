@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sklearn import preprocessing
-from sklearn.datasets import load_wine
 
 from keras import backend as K
 from keras.layers import Input, Dense
@@ -11,11 +9,48 @@ from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
 class FcSparseAutoencoder:
+    """
+    Fully connected sparse autoencoder (SAE)
+    
+    Parameters
+    ----------
+    x (n_samples, n_features) - The training input samples
+    hidden_dims (List) - The structure of autoencoder
+    
+    Attributes
+    ---------
+    FcSparseAutoencoder (network) - The model of sparse autoencoder
+    FcSparseEncoder (network) - The encoder part 
+    
+    Example
+    -------
+    >>> from sklearn import preprocessing
+    >>> from sklearn.datasets import load_wine
+    >>> from pypm.models.fc_sparse_autoencoder import FcSparseAutoencoder
+    >>> # Load data
+    >>> data = load_wine().data
+    array([[1.423e+01, 1.710e+00, 2.430e+00, ..., 1.040e+00, 3.920e+00 ...
+    >>> StandardScaler = preprocessing.StandardScaler().fit(data)
+    >>> train_data = StandardScaler.transform(data)
+    array([[ 1.51861254, -0.5622498 ,  0.23205254, ...,  0.36217728 ...
+    >>> # Build a SparseAutoencoder
+    >>> SparseAutoencoder = FcSparseAutoencoder(train_data, [20, 10, 20])
+    >>> SparseAutoencoder.construct_model()
+    >>> # Train model
+    >>> SparseAutoencoder.train_model()
+    >>> # Save model
+    >>> SparseAutoencoder.save_model('SparseAutoencoder', 'SparseEncoder') 
+    >>> # Get features & reconstructions
+    >>> Features = SparseAutoencoder.get_features(train_data)
+    array([[0.26172   , 0.44321376, 0.318091  , ..., 0.13301125, 0.31837162 ...
+    >>> Reconstructions = SparseAutoencoder.get_reconstructions(train_data)
+    array([[ 0.00241652, -0.12601265, -0.04094902, ...,  0.1492601 ...
+    
+    """
     
     def __init__(self, x, hidden_dims):
         
         self.x = x
-        
         self.hidden_dims = np.array(hidden_dims)
         
     def construct_model(self, p=0.01, beta=1, encode_activation='sigmoid', decode_activation='sigmoid', use_linear=True):
@@ -100,25 +135,4 @@ class FcSparseAutoencoder:
             self.FcSparseEncoder = load_model(FcSparseEncoder_name + '.h5')
         else:
             print("FcSparseEncoder is not load !")
-        
-if __name__ == '__main__':
-
-    # load data and preprocess
-    data = load_wine().data
-    StandardScaler = preprocessing.StandardScaler().fit(data)
-    train_data = StandardScaler.transform(data)
-    
-    # Build a SparseAutoencoder
-    SparseAutoencoder = FcSparseAutoencoder(train_data, [20, 10, 20])
-    SparseAutoencoder.construct_model()
-    
-    # Train model
-    SparseAutoencoder.train_model()
-    
-    # Save model
-    SparseAutoencoder.save_model('SparseAutoencoder', 'SparseEncoder')
-    
-    # Get features & reconstructions
-    Features = SparseAutoencoder.get_features(train_data)
-    Reconstructions = SparseAutoencoder.get_reconstructions(train_data)
     

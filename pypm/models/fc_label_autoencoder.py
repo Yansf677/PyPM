@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sklearn import preprocessing
-from sklearn.datasets import load_wine
 
 from keras.utils import to_categorical
 from keras.layers import Input, Dense
@@ -12,6 +10,49 @@ from keras.callbacks import EarlyStopping
 
 
 class FcLabelAutoencoder:
+    """
+    Fully connected label autoencoder (LAE)
+    
+    Parameters
+    ----------
+    x (n_samples, n_features) - The training input samples
+    hidden_dims (List) - The structure of autoencoder
+    labels (n_samples, n_targets) - The training target samples
+    use_onehot(bool, default=False) - Selection of the type of task (regression or classification)
+    
+    Attributes
+    ---------
+    FcLabelAutoencoder (network) - The model of label autoencoder
+    FcLabelEncoder (network) - The encoder part of LAE
+    FcAutoencoder (network) - The model of autoencoder
+    FcEncoder (network) - The encoder part of AE
+    
+    Example
+    -------
+    >>> from sklearn import preprocessing
+    >>> from sklearn.datasets import load_wine
+    >>> from pypm.models.fc_label_autoencoder import FcLabelAutoencoder
+    >>> # Load data
+    >>> data = load_wine().data
+    >>> labels = load_wine().target
+    array([[1.423e+01, 1.710e+00, 2.430e+00, ..., 1.040e+00, 3.920e+00 ...
+    >>> StandardScaler = preprocessing.StandardScaler().fit(data)
+    >>> train_data = StandardScaler.transform(data)
+    array([[ 1.51861254, -0.5622498 ,  0.23205254, ...,  0.36217728 ...
+    >>> # Build a Label Autoencoder
+    >>> LabelAutoencoder = FcLabelAutoencoder(train_data, labels, [10, 8, 10], use_onehot=True)
+    >>> LabelAutoencoder.construct_model()
+    >>> # Train model
+    >>> LabelAutoencoder.train_model()
+    >>> # Save model
+    >>> LabelAutoencoder.save_model('LabelAutoencoder', 'LabelEncoder') 
+    >>> # Get features & reconstructions
+    >>> Features = LabelAutoencoder.get_features(train_data)
+    array([[0.8625823 , 0.20106801, 0.21828872, ..., 0.50657386, 0.08392137 ...
+    >>> Reconstructions = LabelAutoencoder.get_reconstructions(train_data)
+    array([[ 1.1633966 , -0.37027264,  0.44569713, ...,  0.447681 ...
+    
+    """
     
     def __init__(self, x, labels, hidden_dims, use_onehot=False):
         
@@ -130,26 +171,3 @@ class FcLabelAutoencoder:
             self.FcDecoder = load_model(FcDecoder_name + '.h5')
         else:
             print("FcDecoder is not load !")
-        
-if __name__ == '__main__':
-    
-    # load data and preprocess
-    data = load_wine().data
-    labels = load_wine().target
-    
-    StandardScaler = preprocessing.StandardScaler().fit(data)
-    train_data = StandardScaler.transform(data)
-    
-    # Build an labelautoencoder
-    LabelAutoencoder = FcLabelAutoencoder(train_data, labels, [10, 8, 10], use_onehot=True)
-    LabelAutoencoder.construct_model()
-    
-    # Train model
-    LabelAutoencoder.train_model()
-    
-    # Save model
-    LabelAutoencoder.save_model('LabelAutoencoder', 'LabelEncoder')
-    
-    # Get features & reconstructions
-    Features = LabelAutoencoder.get_features(train_data)
-    Reconstructions = LabelAutoencoder.get_reconstructions(train_data)
