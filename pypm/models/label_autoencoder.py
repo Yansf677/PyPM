@@ -9,9 +9,10 @@ from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
 
-class FcLabelAutoencoder:
+class LabelAutoencoder:
+    
     """
-    Fully connected label autoencoder (LAE)
+    Label autoencoder (LAE)
     
     Parameters
     ----------
@@ -22,16 +23,16 @@ class FcLabelAutoencoder:
     
     Attributes
     ---------
-    FcLabelAutoencoder (network) - The model of label autoencoder
-    FcLabelEncoder (network) - The encoder part of LAE
-    FcAutoencoder (network) - The model of autoencoder
-    FcEncoder (network) - The encoder part of AE
+    LabelAutoencoder (network) - The model of label autoencoder
+    LabelEncoder (network) - The encoder part of LAE
+    Autoencoder (network) - The model of autoencoder
+    Encoder (network) - The encoder part of AE
     
     Example
     -------
     >>> from sklearn import preprocessing
     >>> from sklearn.datasets import load_wine
-    >>> from pypm.models.fc_label_autoencoder import FcLabelAutoencoder
+    >>> from pypm.models.label_autoencoder import LabelAutoencoder
     >>> # Load data
     >>> data = load_wine().data
     >>> labels = load_wine().target
@@ -40,7 +41,7 @@ class FcLabelAutoencoder:
     >>> train_data = StandardScaler.transform(data)
     array([[ 1.51861254, -0.5622498 ,  0.23205254, ...,  0.36217728 ...
     >>> # Build a Label Autoencoder
-    >>> LabelAutoencoder = FcLabelAutoencoder(train_data, labels, [10, 8, 10], use_onehot=True)
+    >>> LabelAutoencoder = LabelAutoencoder(train_data, labels, [10, 8, 10], use_onehot=True)
     >>> LabelAutoencoder.construct_model()
     >>> # Train model
     >>> LabelAutoencoder.train_model()
@@ -68,6 +69,17 @@ class FcLabelAutoencoder:
         self.hidden_dims = np.array(hidden_dims)
         
     def construct_model(self, encode_activation='sigmoid', decode_activation='sigmoid', use_linear=True):
+        
+        """ 
+        Function to initialize a label autoencoder
+        
+        Parameters
+        ----------
+        encode_activation (str, default='sigmoid') - The activation in the encoding function
+        decode_activation (str, default='sigmoid') - The activation in the decoding function
+        use_linear (bool, default=True) - Whether use the linear transform in the output layer
+        
+        """
         
         input_layer_label = Input(shape=(self.x.shape[1] + self.labels.shape[1], ))
         input_layer = Input(shape=(self.x.shape[1], ))
@@ -112,62 +124,112 @@ class FcLabelAutoencoder:
                 output_layer_label = Dense(self.x.shape[1] + self.labels.shape[1], activation = decode_activation)(decode_layer_label)
                 output_layer = Dense(self.x.shape[1], activation = decode_activation)(decode_layer)
             
-        self.FcLabelAutoencoder = Model(input=input_layer_label, output=output_layer_label)
-        self.FcLabelEncoder = Model(input=input_layer_label, output=latent_layer_label)
-        self.FcEncoder = Model(input=input_layer, output=latent_layer)
-        self.FcDecoder = Model(input=input_layer_latent, output=output_layer)
+        self.LabelAutoencoder = Model(input=input_layer_label, output=output_layer_label)
+        self.LabelEncoder = Model(input=input_layer_label, output=latent_layer_label)
+        self.Encoder = Model(input=input_layer, output=latent_layer)
+        self.Decoder = Model(input=input_layer_latent, output=output_layer)
         
     def train_model(self, epochs=1000, batch_size=100, optimizer='Adam', loss='mean_squared_error', use_Earlystopping=True):
+        
+        """ 
+        Function to train the sparse autoencoder
+        
+        Parameters
+        ----------
+        epochs (int, default=1000) - The number of iterations
+        batch_size (int, default=100) - The number of samples in a batch
+        optimizer (str, default='Adam') - The type of optimization when training
+        loss (str, default='mean_squared_error') - The objective used when training
+        use_Earlystopping (bool, default=True) - Whether use the early stopping when training
+        
+        """
+        
         # Train label autoencoder
-        self.FcLabelAutoencoder.compile(optimizer=optimizer, loss=loss)
+        self.LabelAutoencoder.compile(optimizer=optimizer, loss=loss)
         if use_Earlystopping == True:
-            self.history_label = self.FcLabelAutoencoder.fit(self.x_and_label, self.x_and_label, epochs=epochs, batch_size=batch_size, shuffle=True, 
+            self.history_label = self.LabelAutoencoder.fit(self.x_and_label, self.x_and_label, epochs=epochs, batch_size=batch_size, shuffle=True, 
                                     validation_split=0.10, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
         else:
-            self.history_label = self.FcLabelAutoencoder.fit(self.x_and_label, self.x_and_label, epochs = epochs, batch_size = batch_size, shuffle = True)
+            self.history_label = self.LabelAutoencoder.fit(self.x_and_label, self.x_and_label, epochs = epochs, batch_size = batch_size, shuffle = True)
         
         # Learn label features
-        self.FcEncoder.compile(optimizer=optimizer, loss=loss)
+        self.Encoder.compile(optimizer=optimizer, loss=loss)
         if use_Earlystopping == True:
-            self.history_encoder = self.FcEncoder.fit(self.x, self.FcLabelEncoder.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True,
+            self.history_encoder = self.Encoder.fit(self.x, self.LabelEncoder.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True,
                                 validation_split=0.10, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
         else:
-            self.history_encoder = self.FcEncoder.fit(self.x, self.FcLabelEncoder.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True)
+            self.history_encoder = self.Encoder.fit(self.x, self.LabelEncoder.predict(self.x_and_label), epochs=epochs, batch_size=batch_size, shuffle=True)
         
         # reconstruct features
-        self.FcDecoder.compile(optimizer=optimizer, loss=loss)
+        self.Decoder.compile(optimizer=optimizer, loss=loss)
         if use_Earlystopping == True:
-            self.history_decoder = self.FcDecoder.fit(self.FcEncoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True,
+            self.history_decoder = self.Decoder.fit(self.Encoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True,
                                 validation_split=0.10, callbacks=[EarlyStopping(monitor='val_loss', patience=10)])
         else:
-            self.history_decoder = self.FcDecoder.fit(self.FcEncoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True)
+            self.history_decoder = self.Decoder.fit(self.Encoder.predict(self.x), self.x, epochs=epochs, batch_size=batch_size, shuffle=True)
         
     def get_features(self, x_test):
         
-        return self.FcEncoder.predict(x_test)
+        """ Function to calculate features
+        """
+        
+        return self.Encoder.predict(x_test)
         
     def get_reconstructions(self, x_test):
         
-        return self.FcDecoder.predict(self.FcEncoder.predict(x_test))
+        """ 
+        Function to calculate reconstructions
         
-    def save_model(self, FcEncoder_name=None, FcDecoder_name=None):
+        Parameters
+        ----------
+        x_test (_, n_features) - Test samples
         
-        if FcEncoder_name != None:
-            self.FcEncoder.save(FcEncoder_name + '.h5')
-        else:
-            print("FcEncoder is not saved !")
-        if FcDecoder_name != None:
-            self.FcDecoder.save(FcDecoder_name + '.h5')
-        else:
-            print("FcDecoder is not saved !")
+        Return
+        ------
+        featurs (_, _)
         
-    def load_model(self, FcEncoder_name=None, FcDecoder_name=None):
+        """
         
-        if FcEncoder_name != None:
-            self.FcEncoder = load_model(FcEncoder_name + '.h5')
+        return self.Decoder.predict(self.Encoder.predict(x_test))
+        
+    def save_model(self, Encoder_name=None, Decoder_name=None):
+        
+        """ 
+        Function to save the trained model
+        
+        Parameters
+        ----------
+        Autoencoder_name (str, default=None) - Name of autoencoder
+        Encoder_name (str, default=None) - Name of encoder
+        
+        """
+        
+        if Encoder_name != None:
+            self.Encoder.save(Encoder_name + '.h5')
         else:
-            print("FcEncoder is not load !")
-        if FcDecoder_name != None:
-            self.FcDecoder = load_model(FcDecoder_name + '.h5')
+            print("Encoder is not saved !")
+        if Decoder_name != None:
+            self.Decoder.save(Decoder_name + '.h5')
         else:
-            print("FcDecoder is not load !")
+            print("Decoder is not saved !")
+        
+    def load_model(self, Encoder_name=None, Decoder_name=None):
+        
+        """ 
+        Function to load the trained model
+        
+        Parameters
+        ----------
+        Autoencoder_name (str, default=None) - Name of autoencoder
+        Encoder_name (str, default=None) - Name of encoder
+        
+        """
+        
+        if Encoder_name != None:
+            self.Encoder = load_model(Encoder_name + '.h5')
+        else:
+            print("Encoder is not load !")
+        if Decoder_name != None:
+            self.Decoder = load_model(Decoder_name + '.h5')
+        else:
+            print("Decoder is not load !")

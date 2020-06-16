@@ -7,9 +7,10 @@ from keras.models import Model
 from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
-class FcAutoencoder:
+class Autoencoder:
+    
     """
-    Fully connected autoencoder (AE)
+    Autoencoder (AE)
     
     Parameters
     ----------
@@ -18,14 +19,14 @@ class FcAutoencoder:
     
     Attributes
     ----------
-    FcAutoencoder (network) - The model of autoencoder
-    FcEncoder (network) - The encoder part 
+    Autoencoder (network) - The model of autoencoder
+    Encoder (network) - The encoder part 
     
     Example
     -------
     >>> from sklearn import preprocessing
     >>> from sklearn.datasets import load_wine
-    >>> from pypm.models.fc_autoencoder import FcAutoencoder
+    >>> from pypm.models.autoencoder import Autoencoder
     >>> # Load data
     >>> data = load_wine().data
     array([[1.423e+01, 1.710e+00, 2.430e+00, ..., 1.040e+00, 3.920e+00 ...
@@ -33,7 +34,7 @@ class FcAutoencoder:
     >>> train_data = StandardScaler.transform(data)
     array([[ 1.51861254, -0.5622498 ,  0.23205254, ...,  0.36217728 ...
     >>> # Build an autoencoder
-    >>> Autoencoder = FcAutoencoder(train_data, [10, 6, 10])
+    >>> Autoencoder = Autoencoder(train_data, [10, 6, 10])
     >>> Autoencoder.construct_model()
     >>> # Train model
     >>> Autoencoder.train_model()
@@ -53,6 +54,17 @@ class FcAutoencoder:
         self.hidden_dims = np.array(hidden_dims)
         
     def construct_model(self, encode_activation='sigmoid', decode_activation='sigmoid', use_linear=True):
+        
+        """ 
+        Function to initialize a autoencoder
+        
+        Parameters
+        ----------
+        encode_activation (str, default='sigmoid') - The activation in the encoding function
+        decode_activation (str, default='sigmoid') - The activation in the decoding function
+        use_linear (bool, default=True) - Whether use the linear transform in the output layer
+        
+        """
         
         input_layer = Input(shape=(self.x.shape[1], ))
         
@@ -84,46 +96,105 @@ class FcAutoencoder:
             else:
                 output_layer = Dense(self.x.shape[1], activation = decode_activation)(decode_layer)
             
-        self.FcAutoencoder = Model(input=input_layer, output=output_layer)
-        self.FcEncoder = Model(input=input_layer, output=latent_layer)
+        self.Autoencoder = Model(input=input_layer, output=output_layer)
+        self.Encoder = Model(input=input_layer, output=latent_layer)
         
     def train_model(self, epochs=1000, batch_size=100, optimizer='Adam', loss='mean_squared_error', use_Earlystopping=True):
         
-        self.FcAutoencoder.compile(optimizer=optimizer, loss=loss)
+        """ 
+        Function to train the autoencoder
+    
+        Parameters
+        ----------
+        epochs (int, default=1000) - The number of iterations
+        batch_size (int, default=100) - The number of samples in a batch
+        optimizer (str, default='Adam') - The type of optimization when training
+        loss (str, default='mean_squared_error') - The objective used when training
+        use_Earlystopping (bool, default=True) - Whether use the early stopping when training
+        
+        """
+        
+        self.Autoencoder.compile(optimizer=optimizer, loss=loss)
         
         if use_Earlystopping == True:
-            self.history = self.FcAutoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
+            self.history = self.Autoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
                                     validation_split = 0.10, callbacks = [EarlyStopping(monitor='val_loss', patience = 30)])
         else:
-            self.history = self.FcAutoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
+            self.history = self.Autoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
         
     def get_features(self, x_test):
         
-        return self.FcEncoder.predict(x_test)
+        """ 
+        Function to calculate features
+        
+        Parameters
+        ----------
+        x_test (_, n_features) - Test samples
+        
+        Return
+        ------
+        featurs (_, _)
+        
+        """
+        
+        return self.Encoder.predict(x_test)
         
     def get_reconstructions(self, x_test):
         
-        return self.FcAutoencoder.predict(x_test)
+        """ 
+        Function to calculate reconstructions
         
-    def save_model(self, FcAutoencoder_name=None, FcEncoder_name=None):
+        Parameters
+        ----------
+        x_test (_, n_features) - Test samples
         
-        if FcAutoencoder_name != None:
-            self.FcAutoencoder.save(FcAutoencoder_name + '.h5')
-        else:
-            print("FcAutoencoder is not saved !")
-        if FcEncoder_name != None:
-            self.FcEncoder.save(FcEncoder_name + '.h5')
-        else:
-            print("FcEncoder is not saved !")
+        Return
+        ------
+        reconstruction (_, _)
         
-    def load_model(self, FcAutoencoder_name=None, FcEncoder_name=None):
+        """
         
-        if FcAutoencoder_name != None:
-            self.FcAutoencoder = load_model(FcAutoencoder_name + '.h5')
+        return self.Autoencoder.predict(x_test)
+        
+    def save_model(self, Autoencoder_name=None, Encoder_name=None):
+        
+        """ 
+        Function to save the trained model
+        
+        Parameters
+        ----------
+        Autoencoder_name (str, default=None) - Name of autoencoder
+        Encoder_name (str, default=None) - Name of encoder
+        
+        """
+        
+        if Autoencoder_name != None:
+            self.Autoencoder.save(Autoencoder_name + '.h5')
         else:
-            print("FcAutoencoder is not load !")
-        if FcEncoder_name != None:
-            self.FcEncoder = load_model(FcEncoder_name + '.h5')
+            print("Autoencoder is not saved !")
+        if Encoder_name != None:
+            self.Encoder.save(Encoder_name + '.h5')
         else:
-            print("FcEncoder is not load !")
+            print("Encoder is not saved !")
+        
+    def load_model(self, Autoencoder_name=None, Encoder_name=None):
+        
+        """ 
+        Function to load the trained model
+        
+        Parameters
+        ----------
+        Autoencoder_name (str, default=None) - Name of autoencoder
+        Encoder_name (str, default=None) - Name of encoder
+        
+        """
+        
+        if Autoencoder_name != None:
+            self.Autoencoder = load_model(Autoencoder_name + '.h5')
+        else:
+            print("Autoencoder is not load !")
+        if Encoder_name != None:
+            self.Encoder = load_model(Encoder_name + '.h5')
+        else:
+            print("Encoder is not load !")
         

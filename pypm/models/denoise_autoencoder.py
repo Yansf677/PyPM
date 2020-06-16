@@ -7,9 +7,10 @@ from keras.models import Model
 from keras.models import load_model
 from keras.callbacks import EarlyStopping
 
-class FcDenoiseAutoencoder:
+class DenoiseAutoencoder:
+    
     """
-    Fully connected denoising autoencoder (DAE)
+    Denoising autoencoder (DAE)
     
     Parameters
     ----------
@@ -20,14 +21,14 @@ class FcDenoiseAutoencoder:
     
     Attributes
     ----------
-    FcDenoiseAutoencoder (network) - The model of denoising autoencoder
-    FcDenoiseEncoder (network) - The encoder part  
+    DenoiseAutoencoder (network) - The model of denoising autoencoder
+    DenoiseEncoder (network) - The encoder part  
     
     Example
     -------
     >>> from sklearn import preprocessing
     >>> from sklearn.datasets import load_wine
-    >>> from pypm.models.fc_denoise_autoencoder import FcDenoiseAutoencoder
+    >>> from pypm.models.denoise_autoencoder import DenoiseAutoencoder
     >>> # Load data
     >>> data = load_wine().data
     array([[1.423e+01, 1.710e+00, 2.430e+00, ..., 1.040e+00, 3.920e+00 ...
@@ -35,7 +36,7 @@ class FcDenoiseAutoencoder:
     >>> train_data = StandardScaler.transform(data)
     array([[ 1.51861254, -0.5622498 ,  0.23205254, ...,  0.36217728 ...
     >>> # Build a denoise autoencoder
-    >>> DenoiseAutoencoder = FcDenoiseAutoencoder(train_data, [10, 6, 10], corrupt='binary')
+    >>> DenoiseAutoencoder = DenoiseAutoencoder(train_data, [10, 6, 10], corrupt='binary')
     >>> DenoiseAutoencoder.construct_model()
     >>> # Train model
     >>> DenoiseAutoencoder.train_model() 
@@ -59,7 +60,18 @@ class FcDenoiseAutoencoder:
         self.hidden_dims = np.array(hidden_dims)
         
     def construct_model(self, encode_activation='sigmoid', decode_activation='sigmoid', use_linear=True):
-    
+        
+        """ 
+        Function to initialize a denoising autoencoder
+        
+        Parameters
+        ----------
+        encode_activation (str, default='sigmoid') - The activation in the encoding function
+        decode_activation (str, default='sigmoid') - The activation in the decoding function
+        use_linear (bool, default=True) - Whether use the linear transform in the output layer
+        
+        """
+        
         input_layer = Input(shape=(self.x.shape[1], ))
         
         # AE
@@ -90,46 +102,105 @@ class FcDenoiseAutoencoder:
             else:
                 output_layer = Dense(self.x.shape[1], activation = decode_activation)(decode_layer)
            
-        self.FcDenoiseAutoencoder = Model(input=input_layer, output=output_layer)
-        self.FcDenoiseEncoder = Model(input=input_layer, output=latent_layer)
+        self.DenoiseAutoencoder = Model(input=input_layer, output=output_layer)
+        self.DenoiseEncoder = Model(input=input_layer, output=latent_layer)
         
     def train_model(self, epochs=1000, batch_size=100, optimizer='Adam', loss='mean_squared_error', use_Earlystopping=True):
         
-        self.FcDenoiseAutoencoder.compile(optimizer=optimizer, loss=loss)
+        """ 
+        Function to train the denoising autoencoder
+        
+        Parameters
+        ----------
+        epochs (int, default=1000) - The number of iterations
+        batch_size (int, default=100) - The number of samples in a batch
+        optimizer (str, default='Adam') - The type of optimization when training
+        loss (str, default='mean_squared_error') - The objective used when training
+        use_Earlystopping (bool, default=True) - Whether use the early stopping when training
+        
+        """
+        
+        self.DenoiseAutoencoder.compile(optimizer=optimizer, loss=loss)
         
         if use_Earlystopping == True:
-            self.history = self.FcDenoiseAutoencoder.fit(self.x_corrupted, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
+            self.history = self.DenoiseAutoencoder.fit(self.x_corrupted, self.x, epochs = epochs, batch_size = batch_size, shuffle = True, 
                                     validation_split = 0.10, callbacks = [EarlyStopping(monitor='val_loss', patience = 30)])
         else:
-            self.history = self.FcDenoiseAutoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
+            self.history = self.DenoiseAutoencoder.fit(self.x, self.x, epochs = epochs, batch_size = batch_size, shuffle = True)
         
     def get_features(self, x_test):
         
-        return self.FcDenoiseEncoder.predict(x_test)
+        """ 
+        Function to calculate features
+        
+        Parameters
+        ----------
+        x_test (_, n_features) - Test samples
+        
+        Return
+        ------
+        featurs (_, _)
+        
+        """
+        
+        return self.DenoiseEncoder.predict(x_test)
         
     def get_reconstructions(self, x_test):
         
-        return self.FcDenoiseAutoencoder.predict(x_test)
+        """ 
+        Function to calculate reconstructions
         
-    def save_model(self, FcDenoiseAutoencoder_name=None, FcDenoiseEncoder_name=None):
+        Parameters
+        ----------
+        x_test (_, n_features) - Test samples
         
-        if FcDenoiseAutoencoder_name != None:
-            self.FcDenoiseAutoencoder.save(FcDenoiseAutoencoder_name + '.h5')
-        else:
-            print("FcDenoiseAutoencoder is not saved !")
-        if FcDenoiseEncoder_name != None:
-            self.FcDenoiseEncoder.save(FcDenoiseEncoder_name + '.h5')
-        else:
-            print("FcDenoiseEncoder is not saved !")
+        Return
+        ------
+        reconstruction (_, _)
         
-    def load_model(self, FcDenoiseAutoencoder_name=None, FcDenoiseEncoder_name=None):
+        """
         
-        if FcDenoiseAutoencoder_name != None:
-            self.FcDenoiseAutoencoder = load_model(FcDenoiseAutoencoder_name + '.h5')
+        return self.DenoiseAutoencoder.predict(x_test)
+        
+    def save_model(self, DenoiseAutoencoder_name=None, DenoiseEncoder_name=None):
+        
+        """ 
+        Function to save the trained model
+        
+        Parameters
+        ----------
+        Autoencoder_name (str, default=None) - Name of autoencoder
+        Encoder_name (str, default=None) - Name of encoder
+        
+        """
+        
+        if DenoiseAutoencoder_name != None:
+            self.DenoiseAutoencoder.save(DenoiseAutoencoder_name + '.h5')
         else:
-            print("FcDenoiseAutoencoder is not load !")
-        if FcDenoiseEncoder_name != None:
-            self.FcDenoiseEncoder = load_model(FcDenoiseEncoder_name + '.h5')
+            print("DenoiseAutoencoder is not saved !")
+        if DenoiseEncoder_name != None:
+            self.DenoiseEncoder.save(DenoiseEncoder_name + '.h5')
         else:
-            print("FcDenoiseEncoder is not load !")
+            print("DenoiseEncoder is not saved !")
+        
+    def load_model(self, DenoiseAutoencoder_name=None, DenoiseEncoder_name=None):
+        
+        """ 
+        Function to load the trained model
+        
+        Parameters
+        ----------
+        Autoencoder_name (str, default=None) - Name of autoencoder
+        Encoder_name (str, default=None) - Name of encoder
+        
+        """
+        
+        if DenoiseAutoencoder_name != None:
+            self.DenoiseAutoencoder = load_model(DenoiseAutoencoder_name + '.h5')
+        else:
+            print("DenoiseAutoencoder is not load !")
+        if DenoiseEncoder_name != None:
+            self.DenoiseEncoder = load_model(DenoiseEncoder_name + '.h5')
+        else:
+            print("DenoiseEncoder is not load !")
         
